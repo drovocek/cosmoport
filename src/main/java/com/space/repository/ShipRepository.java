@@ -7,5 +7,5 @@ public interface ShipRepository extends CrudRepository<Ship, Integer> {
 
 }
 
-//extends CrudRepository<Ship, Integer>
+
 
