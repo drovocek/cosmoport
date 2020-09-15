@@ -9,14 +9,13 @@ import java.util.Date;
 //@Table(name = "ship")
 public class Ship {
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     private String name;
     private String planet;
 
-//    @ElementCollection(targetClass = ShipType.class, fetch = FetchType.EAGER)
-//    @CollectionTable(name = "shipType", joinColumns = @JoinColumn(name = "id"))
+    @Column(name = "shipType")
     @Enumerated(EnumType.STRING)
     private ShipType shipType;
 
