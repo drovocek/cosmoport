@@ -1,28 +1,45 @@
 package com.space.model;
 
 import com.space.model.ShipType;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.sql.Date;
+import java.sql.Types;
 
 @Entity // This tells Hibernate to make a table out of this class
-//@Table(name = "ship")
+@Table(name = "ship")
+
 public class Ship {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
+    @Column(name = "name")
     private String name;
+
+    @Column(name = "planet")
     private String planet;
 
     @Column(name = "shipType")
     @Enumerated(EnumType.STRING)
     private ShipType shipType;
 
+    @Column(name = "prodDate")
     private Date prodDate;
+
+    @Column(name = "isUsed")
+//    @Type(type="org.joda.time.contrib.hibernate.PersistentDateTime")
     private Boolean isUsed;
+
+    @Column(name = "speed")
     private Double speed;
+
+    @Column(name = "crewSize")
     private Integer crewSize;
+
+    @Column(name = "rating")
     private Double rating;
 
     public Ship(String name, String planet, ShipType shipType, Date prodDate, Boolean isUsed, Double speed, Integer crewSize, Double rating) {
@@ -109,5 +126,19 @@ public class Ship {
 
     public void setRating(Double rating) {
         this.rating = rating;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + "\n" +
+                "id: " + this.getId() + "\n" +
+                " name: " + this.getName()+ "\n" +
+                " planet: " + this.getPlanet() + "\n" +
+                " shipType: " + this.getShipType() +  "\n" +
+                " prodDate: " + this.getProdDate() + "\n" +
+                " isUsed: " + this.getUsed() + "\n" +
+                " speed: " + this.getSpeed() + "\n" +
+                " crewSize: " + this.getCrewSize() + "\n" +
+                " rating: " + this.getRating() +  "\n";
     }
 }
