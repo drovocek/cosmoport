@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface ShipService {
     Ship save(Ship ship);
 
-    List<Ship> getShipsByFilterParam(
+    Page<Ship> getShipsByFilterParam(
             String name, String planet,
             String shipType,
             String after, String before,
@@ -24,13 +24,23 @@ public interface ShipService {
             String order
     );
 
-    long getShipCount();
+//    long getShipCount();
 
-    Ship getById(Long id);
+    Ship getById(String id);
 
-    Ship updateShipById(Long id, Ship sample);
+    Ship updateShipById(String id, Ship sample);
 
-    void deleteById(Long id);
+    void deleteById(String id);
 
     Ship addNewShip(Ship sample);
+
+    Long getShipCount(
+            String name, String planet,
+            String shipType,
+            String after, String before,
+            String isUsed,
+            String minSpeed, String maxSpeed,
+            String minCrewSize, String maxCrewSize,
+            String minRating, String maxRating
+    );
 }

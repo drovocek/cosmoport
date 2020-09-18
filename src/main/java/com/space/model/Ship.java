@@ -1,11 +1,7 @@
 package com.space.model;
 
-import com.space.model.ShipType;
-import org.hibernate.annotations.Type;
-
 import javax.persistence.*;
 import java.sql.Date;
-import java.sql.Types;
 
 @Entity // This tells Hibernate to make a table out of this class
 @Table(name = "ship")
@@ -30,7 +26,6 @@ public class Ship {
     private Date prodDate;
 
     @Column(name = "isUsed")
-//    @Type(type="org.joda.time.contrib.hibernate.PersistentDateTime")
     private Boolean isUsed;
 
     @Column(name = "speed")
@@ -100,8 +95,8 @@ public class Ship {
         return isUsed;
     }
 
-    public void setUsed(Boolean used) {
-        isUsed = used;
+    public void setUsed(Boolean isUsed) {
+        this.isUsed = isUsed;
     }
 
     public Double getSpeed() {

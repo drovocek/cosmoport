@@ -36,7 +36,6 @@ public class ShipController {
             @RequestParam(name = "order", required = false) String order
     ) {
         System.out.println("!!!!!getShips!!!!");
-        System.out.println(isUsed);
 
         List<Ship> allShips = shipService.getShipsByFilterParam(
                 name, planet,
@@ -49,7 +48,7 @@ public class ShipController {
                 pageNumber,
                 pageSize,
                 order
-        );
+        ).getContent();
 
         return allShips;
     }
@@ -57,18 +56,41 @@ public class ShipController {
     //Get ships count
     @GetMapping(path = "/rest/ships/count")
     public @ResponseBody
-    long getShipCount() {
+    Long getShipCount(
+            @RequestParam(name = "name", required = false) String name,
+            @RequestParam(name = "planet", required = false) String planet,
+            @RequestParam(name = "isUsed", required = false) String isUsed,
+            @RequestParam(name = "shipType", required = false) String shipType,
+            @RequestParam(name = "after", required = false) String after,
+            @RequestParam(name = "before", required = false) String before,
+            @RequestParam(name = "minSpeed", required = false) String minSpeed,
+            @RequestParam(name = "maxSpeed", required = false) String maxSpeed,
+            @RequestParam(name = "minCrewSize", required = false) String minCrewSize,
+            @RequestParam(name = "maxCrewSize", required = false) String maxCrewSize,
+            @RequestParam(name = "minRating", required = false) String minRating,
+            @RequestParam(name = "maxRating", required = false) String maxRating
+    ) {
         System.out.println("!!!!!getShipCount!!!!");
-        return shipService.getShipCount();
+
+        return shipService.getShipCount(
+                name, planet,
+                shipType,
+                after, before,
+                isUsed,
+                minSpeed, maxSpeed,
+                minCrewSize, maxCrewSize,
+                minRating, maxRating
+                );
     }
 
     //Create ship
     @PostMapping(path = "/rest/ships")
     public @ResponseBody
     Ship addNewShip(
-            @RequestBody Ship sample
+            @RequestBody(required = false)  Ship sample
     ) {
         System.out.println("!!!!!addNewShip!!!!");
+
         return shipService.addNewShip(sample);
     }
 
@@ -76,9 +98,10 @@ public class ShipController {
     @GetMapping("/rest/ships/{id}")
     public @ResponseBody
     Ship getShipById(
-            @PathVariable Long id
+            @PathVariable String id
     ) {
         System.out.println("!!!!!getShipById!!!!");
+
         return shipService.getById(id);
     }
 
@@ -86,10 +109,11 @@ public class ShipController {
     @PostMapping(path = "/rest/ships/{id}")
     public @ResponseBody
     Ship updateShipById(
-            @PathVariable Long id,
-            @RequestBody Ship sample
+            @PathVariable String id,
+            @RequestBody(required = false) Ship sample
     ) {
         System.out.println("!!!!!updateShipById!!!!");
+
         return shipService.updateShipById(id, sample);
     }
 
@@ -97,10 +121,11 @@ public class ShipController {
     @DeleteMapping(value = "/rest/ships/{id}")
     public @ResponseBody
     void deleteShipById(
-            @PathVariable Long id
+            @PathVariable String id
     ) {
         //TODO добавить метод проверки валидности id
         System.out.println("!!!!!deleteShipById!!!!");
+
         shipService.deleteById(id);
     }
 }

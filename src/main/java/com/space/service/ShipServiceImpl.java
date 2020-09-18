@@ -3,8 +3,8 @@ package com.space.service;
 import com.space.controller.ShipOrder;
 import com.space.model.Ship;
 import com.space.model.ShipType;
-import com.space.model.errors.IllegalIdException;
-import com.space.model.errors.ShipNotFoundException;
+import com.space.model.exceptions.IllegalArgException;
+import com.space.model.exceptions.ShipNotFoundException;
 import com.space.repository.ShipRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -32,9 +32,11 @@ public class ShipServiceImpl implements ShipService {
     }
 
     @Override
-    public Ship getById(Long id) {
-        //TODO добавить метод проверки валидности id if (clientRepository.existsById(id))
-        return shipRepository.findById(id).orElseThrow(() -> new ShipNotFoundException());
+    //Если корабль не найден в БД, отвечает ошибкой с кодом 404.
+    public Ship getById(String id) {
+        Long idLong = null;
+        if (existsById(id)) idLong = Long.parseLong(id);
+        return shipRepository.findById(idLong).orElseThrow(() -> new ShipNotFoundException());
     }
 
     @Override
@@ -43,82 +45,25 @@ public class ShipServiceImpl implements ShipService {
     }
 
     @Override
-    public void deleteById(Long id) {
+    public void deleteById(String id) {
         shipRepository.delete(getById(id));
     }
 
     @Override
-    public Ship updateShipById(Long id, Ship sample) {
-        Ship ship = getById(id);
-
-        String name = sample.getName();
-        String planet = sample.getPlanet();
-        ShipType shipType = sample.getShipType();
-        Date prodDate = sample.getProdDate();
-        Boolean isUsed = sample.getUsed();
-        Double speed = sample.getSpeed();
-        Integer crewSize = sample.getCrewSize();
-        Double rating = sample.getRating();
-
-        //Обновлять нужно только те поля, которые не null.
-        if (name != null) ship.setName(name);
-        if (planet != null) ship.setPlanet(planet);
-        if (shipType != null) ship.setShipType(shipType);
-        if (prodDate != null) ship.setProdDate(prodDate);
-        if (isUsed != null) ship.setUsed(isUsed);
-        if (speed != null) ship.setSpeed(speed);
-        if (crewSize != null) ship.setCrewSize(crewSize);
-
-        /*3. При обновлении или создании корабля игнорируем
-        параметры “id” и “rating” из тела запроса*/
-        ship.setRating(
-                calculateShipRating(
-                        ship.getSpeed(),
-                        ship.getUsed(),
-                        ship.getProdDate().toLocalDate()));
-
-        return shipRepository.save(ship);
+    public Ship updateShipById(String id, Ship supplier) {
+        Ship consumer = getById(id);
+        validateShipParamAndSetIfNotNull(supplier, consumer, true);
+        return shipRepository.save(consumer);
     }
 
     @Override
     public Ship addNewShip(Ship sample) {
-        System.out.println(sample);
         Ship ship = new Ship();
-
-        String name = sample.getName();
-        String planet = sample.getPlanet();
-        ShipType shipType = sample.getShipType();
-        Date prodDate = sample.getProdDate();
-        Boolean isUsed = sample.getUsed();
-        Double speed = sample.getSpeed();
-        Integer crewSize = sample.getCrewSize();
-
-        if (name == null || planet == null || shipType == null
-                || prodDate == null || speed == null
-                || crewSize == null) throw new IllegalIdException();
-        else {
-            ship.setName(name);
-            ship.setPlanet(planet);
-            ship.setShipType(shipType);
-            ship.setProdDate(prodDate);
-            ship.setSpeed(speed);
-            ship.setCrewSize(crewSize);
-        }
-        /*1. Если в запросе на создание корабля нет параметра “isUsed”,
-         то считаем, что пришло значение “false”.*/
-        ship.setUsed((isUsed != null) ? isUsed : false);
-
-        /*3. При обновлении или создании корабля игнорируем
-        параметры “id” и “rating” из тела запроса*/
-        ship.setRating(calculateShipRating(
-                ship.getSpeed(),
-                ship.getUsed(),
-                ship.getProdDate().toLocalDate()));
-
+        validateShipParamAndSetIfNotNull(sample, ship, false);
         return shipRepository.save(ship);
     }
 
-    public List<Ship> getShipsByFilterParam(
+    public Page<Ship> getShipsByFilterParam(
             String name, String planet,
             String shipType,
             String after, String before,
@@ -134,15 +79,28 @@ public class ShipServiceImpl implements ShipService {
         String sName = (name == null) ? "" : name;
         String pName = (planet == null) ? "" : planet;
         String sType = (shipType == null) ? "Any" : shipType;
-        Long pdAfter = Long.parseLong((after == null) ? "0" : after);
-        Long pdBefore = (before == null) ? new Long(93095643600000L) : Long.parseLong(before);
+        Date pdAfter = new Date(Long.parseLong((after == null) ? "26160710400000" : after)); //2799
+        Date pdBefore = new Date(Long.parseLong((before == null) ? "33134745600000" : before)); //3020
         String used = (isUsed == null) ? "Any" : isUsed;
-        Double mnSpeed = Double.parseDouble((minSpeed == null) ? "-1" : minSpeed);
-        Double mxSpeed = (maxSpeed == null) ? Double.MAX_VALUE : Double.parseDouble(maxSpeed);
+        Double mnSpeed = Double.parseDouble((minSpeed == null) ? "0" : minSpeed);
+        Double mxSpeed = Double.parseDouble((maxSpeed == null) ? "1" : maxSpeed);
         Integer mnCrewSize = Integer.parseInt((minCrewSize == null) ? "0" : minCrewSize);
-        Integer mxCrewSize = (maxCrewSize == null) ? Integer.MAX_VALUE : Integer.parseInt(maxCrewSize);
+        Integer mxCrewSize = Integer.parseInt((maxCrewSize == null) ? "10000" : maxCrewSize);
         Double mnRating = Double.parseDouble((minRating == null) ? "-1" : minRating);
-        Double mxRating = (maxRating == null) ? Double.MAX_VALUE : Double.parseDouble(maxRating);
+        Double mxRating = Double.parseDouble((maxRating == null) ? "100" : maxRating);
+
+        System.out.println("sName: " + sName);
+        System.out.println("pName: " + pName);
+        System.out.println("sType: " + sType);
+        System.out.println("pdAfter: " + pdAfter);
+        System.out.println("pdBefore: " + pdBefore);
+        System.out.println("used: " + used);
+        System.out.println("mnSpeed: " + mnSpeed);
+        System.out.println("mxSpeed: " + mxSpeed);
+        System.out.println("mnCrewSize: " + mnCrewSize);
+        System.out.println("mxCrewSize: " + mxCrewSize);
+        System.out.println("mnRating: " + mnRating);
+        System.out.println("mxRating: " + mxRating);
 
 //        4. Если параметр pageNumber не указан – нужно использовать значение 0
         Integer pNumber = Integer.parseInt((pageNumber == null) ? "0" : pageNumber);
@@ -151,72 +109,177 @@ public class ShipServiceImpl implements ShipService {
         Integer pSize = Integer.parseInt((pageSize == null) ? "3" : pageSize);
         ShipOrder shipOrder = ShipOrder.valueOf((order == null) ? "ID" : order);
 
-        Function<String, Predicate<Ship>> getIsUsedPred = x -> {
-            if (x.equals("Any")) return y -> true;
-            return y -> y.getUsed().equals(new Boolean(x));
-        };
-
-        ShipType[] st = (sType.equals("Any")) ?
-                new ShipType[]{ShipType.MILITARY, ShipType.MERCHANT, ShipType.TRANSPORT}
-                : new ShipType[]{ShipType.valueOf(sType), ShipType.valueOf(sType), ShipType.valueOf(sType)};
-
         Pageable limit = PageRequest.of(pNumber, pSize, Sort.by(shipOrder.getFieldName()));
-        Page<Ship> result = (sType.equals("Any")) ?
-                shipRepository.searchAll(
-                        sName,
-                        pName,
-                        new Date(pdAfter), new Date(pdBefore),
-                        //    new Boolean(true),
-                        mnSpeed, mxSpeed,
-                        mnCrewSize, mxCrewSize,
-                        mnRating, mxRating,
-                        limit
-                )
-                :
-                shipRepository.searchAllByType(
-                        sName,
-                        pName,
-                        ShipType.valueOf(sType),
-                        new Date(pdAfter), new Date(pdBefore),
-                        //    new Boolean(true),
-                        mnSpeed, mxSpeed,
-                        mnCrewSize, mxCrewSize,
-                        mnRating, mxRating,
-                        limit
-                );
+        Page<Ship> result = null;
+
+        if(sType.equals("Any") && used.equals("Any")){
+            result = shipRepository.searchAll(
+                    sName, pName,
+                    pdAfter, pdBefore,
+                    mnSpeed, mxSpeed,
+                    mnCrewSize, mxCrewSize,
+                    mnRating, mxRating,
+                    limit
+            );
+        }
+//        else if(sType.equals("Any")){
+//            result = shipRepository.searchAllByBool(
+//                    sName, pName,
+//                    new Boolean(used),
+//                    pdAfter, pdBefore,
+//                    mnSpeed, mxSpeed,
+//                    mnCrewSize, mxCrewSize,
+//                    mnRating, mxRating,
+//                    limit
+//            );
+//        }
+//        else if(used.equals("Any")){
+//            result = shipRepository.searchAllByType(
+//                    sName, pName,
+//                    ShipType.valueOf(sType),
+//                    pdAfter, pdBefore,
+//                    mnSpeed, mxSpeed,
+//                    mnCrewSize, mxCrewSize,
+//                    mnRating, mxRating,
+//                    limit
+//            );
+//        }
+//        else{
+//            result = shipRepository.searchAllByTypeAndBool(
+//                    sName, pName,
+//                    ShipType.valueOf(sType),
+//                    new Boolean(used),
+//                    pdAfter, pdBefore,
+//                    mnSpeed, mxSpeed,
+//                    mnCrewSize, mxCrewSize,
+//                    mnRating, mxRating,
+//                    limit
+//            );
+//        }
 
         shipCount = result.getTotalElements();
 
-        return result.getContent();//.stream().filter(getIsUsedPred.apply(used)).collect(Collectors.toList());
+        return result;
     }
 
-    public long getShipCount() {
-        return shipCount;
+    public Long getShipCount(
+            String name, String planet,
+            String shipType,
+            String after, String before,
+            String isUsed,
+            String minSpeed, String maxSpeed,
+            String minCrewSize, String maxCrewSize,
+            String minRating, String maxRating
+    ) {
+        Long count = getShipsByFilterParam(
+                name, planet,
+                shipType,
+                after, before,
+                isUsed,
+                minSpeed, maxSpeed,
+                minCrewSize, maxCrewSize,
+                minRating, maxRating,
+                null,
+                null,
+                null
+        ).getTotalElements();
+
+        System.out.println("----------------");
+        System.out.println("count: " + count);
+        System.out.println("----------------");
+        System.out.println("----------------");
+
+        return count;
     }
 
-    private Double calculateShipRating(Double speed, Boolean isUsed, LocalDate prodDate) {
-        Double a = 80 * speed * ((isUsed == true) ? 0.5 : 1);
-        Integer b = (LocalDate.of(3019, 1, 1).getYear() - prodDate.getYear() + 1);
+    //калькуляция рейтинга корабля
+    private Double calculateShipRating(Ship ship) {
+        Double a = 80 * ship.getSpeed() * ((ship.getUsed() == true) ? 0.5 : 1);
+        Integer b = (LocalDate.of(3019, 1, 1).getYear() - ship.getProdDate().toLocalDate().getYear() + 1);
         Double rating = a / b;
-        System.out.println(a);
-        System.out.println(b);
+        return roundDecDouble(rating, 2);
 
-        BigDecimal bd = new BigDecimal(Double.toString(rating));
-        bd = bd.setScale(2, RoundingMode.HALF_UP);
+    }
 
+    /*Проверяет валидность id
+    Не валидным считается id, если он:
+      - не числовой
+      - не целое число
+      - не положительный
+    Если значение id не валидное, отвечает ошибкой с кодом 400.*/
+    private boolean existsById(String id) {
+        boolean isValid = true;
+        Long l;
+        try {
+            l = Long.parseLong(id);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgException();
+        }
+
+        if (l <= 0) throw new IllegalArgException();
+
+        return isValid;
+    }
+
+    //округляет Double до dec нулей после запятой
+    private Double roundDecDouble(Double num, int dec) {
+        BigDecimal bd = new BigDecimal(Double.toString(num));
+        bd = bd.setScale(dec, RoundingMode.HALF_UP);
         return bd.doubleValue();
     }
 
-    /*Не валидным считается id, если он:
-      - не числовой
-      - не целое число
-      - не положительный*/
+    //utills
+    //Обновлять нужно только те поля, которые не null.
+    //3. При обновлении или создании корабля игнорируем параметры “id” и “rating” из тела запроса
+    private void validateShipParamAndSetIfNotNull(Ship supplier, Ship consumer, boolean nullIsValidParam) {
+        String name = supplier.getName();
+        String planet = supplier.getPlanet();
+        ShipType shipType = supplier.getShipType();
+        Boolean isUsed = supplier.getUsed();
+        Date prodDate = supplier.getProdDate();
+        Double speed = supplier.getSpeed();
+        Integer crewSize = supplier.getCrewSize();
 
-//Если корабль не найден в БД, необходимо ответить ошибкой с кодом 404.
-//    Если значение id не валидное, необходимо ответить ошибкой с кодом 400.
-    private boolean existsById(Object id){
-        boolean isValid = true;
+        if (!nullIsValidParam) {
+            if (name == null
+                    || planet == null
+                    || shipType == null
+                    || prodDate == null
+                    || speed == null
+                    || crewSize == null
+            ) throw new IllegalArgException();
+        }
 
-        return isValid;
+        if (name != null) {
+            if (name.length() > 50 || name.isEmpty()) throw new IllegalArgException();
+            else consumer.setName(name);
+        }
+
+        if (planet != null) {
+            if (planet.length() > 50 || planet.isEmpty()) throw new IllegalArgException();
+            else consumer.setPlanet(planet);
+        }
+
+        if (shipType != null) consumer.setShipType(shipType);
+
+        if (prodDate != null) {
+            if (prodDate.getTime() < 0 || prodDate.toLocalDate().getYear() < 2800 || prodDate.toLocalDate().getYear() >= 3019)
+                throw new IllegalArgException();
+            else consumer.setProdDate(prodDate);
+        }
+
+        if (speed != null) {
+            if (speed < 0.01 || speed >= 0.99) throw new IllegalArgException();
+            else consumer.setSpeed(roundDecDouble(speed, 2));
+        }
+        if (crewSize != null) {
+            if (crewSize < 1 || crewSize >= 9999) throw new IllegalArgException();
+            else consumer.setCrewSize(crewSize);
+        }
+
+        if (!nullIsValidParam) consumer.setUsed((isUsed != null) ? isUsed : false);
+
+        consumer.setRating(
+                calculateShipRating(consumer));
     }
 }
