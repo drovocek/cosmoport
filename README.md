@@ -1,5 +1,7 @@
-# cosmoport
-edu project from https://javarush.ru/
+# Сosmoport
+Еraining project for admission to internship
+
+from https://javarush.ru/
 
 # Technologyes:
   - Maven; 
