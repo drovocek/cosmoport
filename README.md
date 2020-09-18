@@ -1,7 +1,7 @@
 # cosmoport
 edu project from https://javarush.ru/
 
-Technologyes:
+Technologyes:\n
   -Maven; 
   -Tomcat 9; 
   -Spring; 
