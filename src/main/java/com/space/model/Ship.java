@@ -91,11 +91,11 @@ public class Ship {
         this.prodDate = prodDate;
     }
 
-    public Boolean getUsed() {
+    public Boolean getIsUsed() {
         return isUsed;
     }
 
-    public void setUsed(Boolean isUsed) {
+    public void setIsUsed(Boolean isUsed) {
         this.isUsed = isUsed;
     }
 
@@ -131,7 +131,7 @@ public class Ship {
                 " planet: " + this.getPlanet() + "\n" +
                 " shipType: " + this.getShipType() +  "\n" +
                 " prodDate: " + this.getProdDate() + "\n" +
-                " isUsed: " + this.getUsed() + "\n" +
+                " isUsed: " + this.getIsUsed() + "\n" +
                 " speed: " + this.getSpeed() + "\n" +
                 " crewSize: " + this.getCrewSize() + "\n" +
                 " rating: " + this.getRating() +  "\n";

@@ -19,25 +19,23 @@ public class ShipController {
     @GetMapping(path = "/rest/ships")
     public @ResponseBody
     Iterable<Ship> getShips(
-            @RequestParam(name = "name", required = false) String name,
-            @RequestParam(name = "planet", required = false) String planet,
-            @RequestParam(name = "isUsed", required = false) String isUsed,
-            @RequestParam(name = "shipType", required = false) String shipType,
-            @RequestParam(name = "after", required = false) String after,
-            @RequestParam(name = "before", required = false) String before,
-            @RequestParam(name = "minSpeed", required = false) String minSpeed,
-            @RequestParam(name = "maxSpeed", required = false) String maxSpeed,
-            @RequestParam(name = "minCrewSize", required = false) String minCrewSize,
-            @RequestParam(name = "maxCrewSize", required = false) String maxCrewSize,
-            @RequestParam(name = "minRating", required = false) String minRating,
-            @RequestParam(name = "maxRating", required = false) String maxRating,
-            @RequestParam(name = "pageNumber", required = false) String pageNumber,
-            @RequestParam(name = "pageSize", required = false) String pageSize,
-            @RequestParam(name = "order", required = false) String order
+            @RequestParam(name = "name", required = false, defaultValue = "") String name,
+            @RequestParam(name = "planet", required = false, defaultValue = "") String planet,
+            @RequestParam(name = "isUsed", required = false, defaultValue = "Any") String isUsed,
+            @RequestParam(name = "shipType", required = false, defaultValue = "Any") String shipType,
+            @RequestParam(name = "after", required = false, defaultValue = "26160710400000") String after,
+            @RequestParam(name = "before", required = false, defaultValue = "33134745600000") String before,
+            @RequestParam(name = "minSpeed", required = false, defaultValue = "0") String minSpeed,
+            @RequestParam(name = "maxSpeed", required = false, defaultValue = "1") String maxSpeed,
+            @RequestParam(name = "minCrewSize", required = false, defaultValue = "0") String minCrewSize,
+            @RequestParam(name = "maxCrewSize", required = false, defaultValue = "10000") String maxCrewSize,
+            @RequestParam(name = "minRating", required = false, defaultValue = "-1") String minRating,
+            @RequestParam(name = "maxRating", required = false, defaultValue = "100") String maxRating,
+            @RequestParam(name = "pageNumber", required = false, defaultValue = "0") String pageNumber,
+            @RequestParam(name = "pageSize", required = false, defaultValue = "3") String pageSize,
+            @RequestParam(name = "order", required = false, defaultValue = "ID") String order
     ) {
-        System.out.println("!!!!!getShips!!!!");
-
-        List<Ship> allShips = shipService.getShipsByFilterParam(
+        return shipService.getShipsByFilterParam(
                 name, planet,
                 shipType,
                 after, before,
@@ -49,29 +47,26 @@ public class ShipController {
                 pageSize,
                 order
         ).getContent();
-
-        return allShips;
     }
 
     //Get ships count
     @GetMapping(path = "/rest/ships/count")
     public @ResponseBody
     Long getShipCount(
-            @RequestParam(name = "name", required = false) String name,
-            @RequestParam(name = "planet", required = false) String planet,
-            @RequestParam(name = "isUsed", required = false) String isUsed,
-            @RequestParam(name = "shipType", required = false) String shipType,
-            @RequestParam(name = "after", required = false) String after,
-            @RequestParam(name = "before", required = false) String before,
-            @RequestParam(name = "minSpeed", required = false) String minSpeed,
-            @RequestParam(name = "maxSpeed", required = false) String maxSpeed,
-            @RequestParam(name = "minCrewSize", required = false) String minCrewSize,
-            @RequestParam(name = "maxCrewSize", required = false) String maxCrewSize,
-            @RequestParam(name = "minRating", required = false) String minRating,
-            @RequestParam(name = "maxRating", required = false) String maxRating
+            @RequestParam(name = "name", required = false, defaultValue = "") String name,
+            @RequestParam(name = "planet", required = false, defaultValue = "") String planet,
+            @RequestParam(name = "isUsed", required = false, defaultValue = "Any") String isUsed,
+            @RequestParam(name = "shipType", required = false, defaultValue = "Any") String shipType,
+            @RequestParam(name = "after", required = false, defaultValue = "26160710400000") String after,
+            @RequestParam(name = "before", required = false, defaultValue = "33134745600000") String before,
+            @RequestParam(name = "minSpeed", required = false, defaultValue = "0") String minSpeed,
+            @RequestParam(name = "maxSpeed", required = false, defaultValue = "1") String maxSpeed,
+            @RequestParam(name = "minCrewSize", required = false, defaultValue = "0") String minCrewSize,
+            @RequestParam(name = "maxCrewSize", required = false, defaultValue = "10000") String maxCrewSize,
+            @RequestParam(name = "minRating", required = false, defaultValue = "-1") String minRating,
+            @RequestParam(name = "maxRating", required = false, defaultValue = "100") String maxRating,
+            @RequestParam(name = "pageNumber", required = false, defaultValue = "0") String pageNumber
     ) {
-        System.out.println("!!!!!getShipCount!!!!");
-
         return shipService.getShipCount(
                 name, planet,
                 shipType,
@@ -80,17 +75,15 @@ public class ShipController {
                 minSpeed, maxSpeed,
                 minCrewSize, maxCrewSize,
                 minRating, maxRating
-                );
+        );
     }
 
     //Create ship
     @PostMapping(path = "/rest/ships")
     public @ResponseBody
     Ship addNewShip(
-            @RequestBody(required = false)  Ship sample
+            @RequestBody(required = false) Ship sample
     ) {
-        System.out.println("!!!!!addNewShip!!!!");
-
         return shipService.addNewShip(sample);
     }
 
@@ -100,8 +93,6 @@ public class ShipController {
     Ship getShipById(
             @PathVariable String id
     ) {
-        System.out.println("!!!!!getShipById!!!!");
-
         return shipService.getById(id);
     }
 
@@ -112,8 +103,6 @@ public class ShipController {
             @PathVariable String id,
             @RequestBody(required = false) Ship sample
     ) {
-        System.out.println("!!!!!updateShipById!!!!");
-
         return shipService.updateShipById(id, sample);
     }
 
@@ -123,9 +112,6 @@ public class ShipController {
     void deleteShipById(
             @PathVariable String id
     ) {
-        //TODO добавить метод проверки валидности id
-        System.out.println("!!!!!deleteShipById!!!!");
-
         shipService.deleteById(id);
     }
 }
