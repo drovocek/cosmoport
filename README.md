@@ -1,5 +1,5 @@
 # Сosmoport
-Еraining project for admission to internship
+Training project for admission to internship
 
 from https://javarush.ru/
 
